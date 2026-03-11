@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Productivity Hub</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50c878;
+            --danger: #ff6b6b;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333;
+            --text-light: #666;
+            --input-border: #ddd;
+        }
+
+        body.dark-mode {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --text-light: #b0b0b0;
+            --input-border: #333;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0; /* Start hidden for animation */
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 300;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            flex: 1;
+            min-width: 320px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        /* Exam Countdown Styles */
+        .exam-input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="datetime-local"] {
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 10px;
+            background: var(--card-bg);
+            color: var(--text);
+        }
+
+        .countdown-display {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .time-unit {
+            flex: 1;
+        }
+
+        .time-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+        }
+
+        .time-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        /* Pomodoro Styles */
+        .pomodoro-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--secondary);
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.05);
+        }
+
+        body.dark-mode .mode-badge { background: rgba(255,255,255,0.05); }
+
+        .mode-work { color: var(--primary); }
+        .mode-break { color: var(--secondary); }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--input-border); color: var(--text-light); }
+        
+        #error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            height: 1.2rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .card { min-width: 100%; }
+            .header { flex-direction: column; gap: 15px; text-align: center; }
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <div class="header fade-in delay-1">
+        <h1>Study Dashboard</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+            <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Exam Countdown Card -->
+        <div class="card fade-in delay-2">
+            <h2>📅 Exam Countdown</h2>
+            <div class="exam-input-group">
+                <input type="datetime-local" id="exam-date">
+                <button class="btn-primary" onclick="setExamDate()">Set Exam Date</button>
+                <div id="error-msg"></div>
+            </div>
+            <div id="countdown" class="countdown-display">
+                <div class="time-unit">
+                    <span id="days" class="time-value">00</span>
+                    <span class="time-label">Days</span>
+                </div>
+                <div class="time-unit">
+                    <span id="hours" class="time-value">00</span>
+                    <span class="time-label">Hours</span>
+                </div>
+                <div class="time-unit">
+                    <span id="minutes" class="time-value">00</span>
+                    <span class="time-label">Mins</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pomodoro Timer Card -->
+        <div class="card fade-in delay-3">
+            <h2>🍅 Pomodoro Timer</h2>
+            <div id="pomo-mode" class="mode-badge mode-work">Focus Session</div>
+            <div id="pomo-display" class="pomodoro-display">25:00</div>
+            <div class="controls">
+                <button id="pomo-start" class="btn-secondary" onclick="togglePomo()">Start</button>
+                <button class="btn-outline" onclick="resetPomo()">Reset</button>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-light);">
+                25m Work | 5m Break
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /** THEME LOGIC **/
+        function toggleTheme() {
+            const body = document.body;
+            const btnText = document.getElementById('theme-text');
+            const btnIcon = document.getElementById('theme-icon');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                btnText.innerText = 'Dark Mode';
+                btnIcon.innerText = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-mode');
+                btnText.innerText = 'Light Mode';
+                btnIcon.innerText = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize Theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-text').innerText = 'Light Mode';
+            document.getElementById('theme-icon').innerText = '☀️';
+        }
+
+
+        /** EXAM COUNTDOWN LOGIC **/
+        let countdownInterval;
+
+        function updateCountdown() {
+            const targetStr = localStorage.getItem('examDate');
+            if (!targetStr) return;
+
+            const target = new Date(targetStr);
+            const now = new Date();
+            const diff = target - now;
+
+            if (diff <= 0) {
+                document.getElementById('days').innerText = '00';
+                document.getElementById('hours').innerText = '00';
+                document.getElementById('minutes').innerText = '00';
+                clearInterval(countdownInterval);
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('days').innerText = d.toString().padStart(2, '0');
+            document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = m.toString().padStart(2, '0');
+        }
+
+        function setExamDate() {
+            const input = document.getElementById('exam-date').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            if (!input) {
+                errorMsg.innerText = "Please select a date.";
+                return;
+            }
+
+            const targetDate = new Date(input);
+            if (targetDate <= new Date()) {
+                errorMsg.innerText = "Date must be in the future.";
+                return;
+            }
+
+            errorMsg.innerText = "";
+            localStorage.setItem('examDate', input);
+            
+            // Start immediately
+            clearInterval(countdownInterval);
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000); // Check every second for better responsiveness
+        }
+
+        // Initialize Countdown
+        const savedDate = localStorage.getItem('examDate');
+        if (savedDate) {
+            document.getElementById('exam-date').value = savedDate;
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+
+        /** POMODORO TIMER LOGIC **/
+        let pomoTimeLeft = 25 * 60;
+        let pomoIsRunning = false;
+        let pomoInterval;
+        let isWorkMode = true;
+
+        const pomoDisplay = document.getElementById('pomo-display');
+        const pomoStartBtn = document.getElementById('pomo-start');
+        const pomoModeBadge = document.getElementById('pomo-mode');
+
+        function updatePomoDisplay() {
+            const mins = Math.floor(pomoTimeLeft / 60);
+            const secs = pomoTimeLeft % 60;
+            pomoDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.title = `${pomoDisplay.innerText} - Study Hub`;
+        }
+
+        function togglePomo() {
+            if (pomoIsRunning) {
+                clearInterval(pomoInterval);
+                pomoStartBtn.innerText = "Start";
+                pomoStartBtn.classList.replace('btn-outline', 'btn-secondary');
+            } else {
+                pomoInterval = setInterval(() => {
+                    pomoTimeLeft--;
+                    updatePomoDisplay();
+                    if (pomoTimeLeft <= 0) {
+                        switchPomoMode();
+                    }
+                }, 1000);
+                pomoStartBtn.innerText = "Pause";
+                pomoStartBtn.classList.replace('btn-secondary', 'btn-outline');
+            }
+            pomoIsRunning = !pomoIsRunning;
+        }
+
+        function resetPomo() {
+            clearInterval(pomoInterval);
+            pomoIsRunning = false;
+            isWorkMode = true;
+            pomoTimeLeft = 25 * 60;
+            pomoStartBtn.innerText = "Start";
+            pomoStartBtn.classList.replace('btn-outline', 'btn-secondary');
+            pomoModeBadge.innerText = "Focus Session";
+            pomoModeBadge.className = "mode-badge mode-work";
+            updatePomoDisplay();
+        }
+
+        function switchPomoMode() {
+            clearInterval(pomoInterval);
+            pomoIsRunning = false;
+            isWorkMode = !isWorkMode;
+            
+            if (isWorkMode) {
+                pomoTimeLeft = 25 * 60;
+                pomoModeBadge.innerText = "Focus Session";
+                pomoModeBadge.className = "mode-badge mode-work";
+                alert("Break over! Time to focus.");
+            } else {
+                pomoTimeLeft = 5 * 60;
+                pomoModeBadge.innerText = "Break Time";
+                pomoModeBadge.className = "mode-badge mode-break";
+                alert("Great work! Take a 5-minute break.");
+            }
+            
+            pomoStartBtn.innerText = "Start";
+            pomoStartBtn.classList.replace('btn-outline', 'btn-secondary');
+            updatePomoDisplay();
+        }
+
+        updatePomoDisplay();
+    </script>
+</body>
+</html>
