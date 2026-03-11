@@ -6,14 +6,14 @@
     <title>Student Productivity Hub</title>
     <style>
         :root {
-            --primary: #4a90e2;
-            --secondary: #50c878;
-            --danger: #ff6b6b;
-            --bg: #f4f7f6;
+            --primary: #54a0ff;
+            --secondary: #00d2d3;
+            --danger: #ff7675;
+            --bg: #e6f2ff;
             --card-bg: #ffffff;
-            --text: #333;
-            --text-light: #666;
-            --input-border: #ddd;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --input-border: #d1d8e0;
         }
 
         body.dark-mode {
@@ -212,9 +212,35 @@
             .card { min-width: 100%; }
             .header { flex-direction: column; gap: 15px; text-align: center; }
         }
+
+        .profile-pic {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 800px) {
+            .profile-pic {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
 <body class="light-mode">
+    <img src="images/picture.jpg" alt="User Profile" class="profile-pic fade-in">
 
     <div class="header fade-in delay-1">
         <h1>Study Dashboard</h1>
